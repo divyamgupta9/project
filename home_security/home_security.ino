@@ -1,11 +1,11 @@
 #include <LiquidCrystal.h> // includes the LiquidCrystal Library 
 #include <Keypad.h>
-#include<SoftwareSerial.h>
-#define buzzer 8
-SoftwareSerial mySerial(10,11);
-int pir =12;
+#include <SoftwareSerial.h>
+#define buzzer 13
+SoftwareSerial mySerial();
+int pir =11;
 int screenOffMsg =0;
-String password="1234";
+String password="1111";
 String tempPassword;
 boolean activated = false; // State of the alarm
 boolean isActivated;
@@ -24,62 +24,67 @@ char keyMap[ROWS][COLS] = {
   {'7','8','9','C'},
   {'*','0','#','D'}
 };
-byte rowPins[ROWS] = {3,2,1,0}; //Row pinouts of the keypad
-byte colPins[COLS] = {4,5,6,7}; //Column pinouts of the keypad
+byte rowPins[ROWS] = {A5,A4,A3,A2}; //Row pinouts of the keypad
+byte colPins[COLS] = {A1,A0,9,10}; //Column pinouts of the keypad
 Keypad myKeypad = Keypad( makeKeymap(keyMap), rowPins, colPins, ROWS, COLS); 
-LiquidCrystal lcd(A0,A1,A2,A3,A4,A5); // Creates an LC object. Parameters: (rs, enable, d4, d5, d6, d7) 
+LiquidCrystal lcd(2,3,4,5,7,8); // Creates an LC object. Parameters: (rs, enable, d4, d5, d6, d7) 
+
 void setup() { 
   lcd.begin(16,2); 
-Serial.begin(9600);
-  mySerial.begin(9600);
+  analogWrite(6,70);
+  Serial.begin(9600);
+ // mySerial.begin(9600);
   pinMode(buzzer, OUTPUT);
-  pinMode(12, INPUT);
-pinMode(13,OUTPUT);
+  pinMode(11, INPUT);
+  pinMode(13, OUTPUT);
 }
+
 void loop() {
   
-  if (activateAlarm) {
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Alarm will be");
-    lcd.setCursor(0,1);
-    lcd.print("activated in");
-    lcd.clear();
-    lcd.setCursor(0,0);
-    lcd.print("Alarm Activated!");
-    //initialDistance = getDistance();
-    activateAlarm = false;
-    alarmActivated = true;
+     if (activateAlarm){
+     lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print("Alarm is ON");
+     activateAlarm = false;
+     alarmActivated = true;
   }
  
     if (alarmActivated == true){
-     int PIR = digitalRead(12);
+      int PIR = digitalRead(11);
       if (PIR==HIGH)
       {
-        tone(buzzer, 1000); // Send 1KHz sound signal 
+        lcd.clear();
+     lcd.setCursor(0,0);
+     lcd.print("Person Detected");
+         // Send 1KHz sound signal 
+       /// delay(1000);                  
+       // Serial.print("ATD +917014922669;\r");//Phone number you want to call
+       // delay(5000);
+       // Serial.print("ATH;\r");
+       /* Serial.println("AT+CMGF=1"); // set the SMS mode to text
+        Serial.write("AT+CMGS=");
+        Serial.write(34); //ASCII of "
+        Serial.write("+917014922669");
+        Serial.write(34);
+        Serial.write(13);
+        Serial.write(10);
+      
+        Serial.println("ALERT"); //this is the message to be sent
+        delay(2500);
+        Serial.write(26);
+        Serial.write(13);
+        Serial.write(10);//Ascii code of ctrl+z to send the message
+       // delay(500);*/
+      /*  for(int n=1;n<=3;n++)
+        {
         lcd.clear();
         lcd.setCursor(0,0);
-        lcd.println("Sending message to");
-        lcd.setCursor(0,1);
-        lcd.println("91**********");
-        delay(1000);
+        lcd.print("     ALERT  ");
+        delay(500);
         lcd.clear();
-        /*/ mySerial.println("AT+CMGF=1"); // set the SMS mode to text
-delay(500);
-mySerial.write("AT+CMGS=");
-mySerial.write(34); //ASCII of "
-mySerial.write("+919783952043");
-mySerial.write(34);
-mySerial.write(13);
-mySerial.write(10);
-delay(500);
-mySerial.println("hello"); //this is the message to be sent
-delay(2500);
-mySerial.write(26);
-mySerial.write(13);
-mySerial.write(10);//Ascii code of ctrl+z to send the message
-delay(500);/*/
-enterPassword();
+        delay(500);
+        }*/
+        enterPassword();
 }
  }
   if (!alarmActivated) {
@@ -94,12 +99,12 @@ enterPassword();
     keypressed = myKeypad.getKey();
      if (keypressed =='A'){        //If A is pressed, activate the alarm
       tone(buzzer, 1000, 200);
-      activateAlarm = true;            
-  digitalWrite(13,HIGH);
-Serial.println("A");  
-  }
+      activateAlarm = true; 
+digitalWrite(13,HIGH);
+    }
     else if (keypressed =='B') {
       lcd.clear();
+      digitalWrite(13,HIGH);
       int i=1;
       tone(buzzer, 2000, 100);
       tempPassword = "";
@@ -132,10 +137,11 @@ Serial.println("A");
         lcd.print(">"); 
       }
       if ( keypressed == '*') {
-        i=1;
-        tone(buzzer, 2000, 100);
-        if (password == tempPassword) {
+       i=1;
+      // tone(buzzer, 2000, 100);
+     if (password == tempPassword) {
           tempPassword="";
+          Serial.println(keypressed);
           lcd.clear();
           lcd.setCursor(0,0);
           lcd.print("Set New Password");
@@ -165,12 +171,14 @@ Serial.println("A");
               lcd.print(">");
             }
             if ( keypressed == '*') {
-              i=1;
-              tone(buzzer, 2000, 100);
+              
+             //tone(buzzer, 2000, 100);
+             i=1;
               password = tempPassword;
               passChangeMode = false;
               passChanged = false;
               screenOffMsg = 0;
+              //digitalWrite(13,HIGH);
             }            
           }
         }
@@ -180,28 +188,13 @@ Serial.println("A");
  }
 }
 void enterPassword() {
-  mySerial.println("AT+CMGF=1"); // set the SMS mode to text
-delay(500);
-mySerial.write("AT+CMGS=");
-mySerial.write(34); //ASCII of "
-mySerial.write("+919783952043");
-mySerial.write(34);
-mySerial.write(13);
-mySerial.write(10);
-delay(1000);
-mySerial.println("hello"); //this is the message to be sent
-//delay(2500);
-mySerial.write(26);
-mySerial.write(13);
-mySerial.write(10);//Ascii code of ctrl+z to send the message
-delay(500);
-//while(1);
   int k=5;
+  int m=0;
   tempPassword = "";
   activated = true;
   lcd.clear();
   lcd.setCursor(0,0);
-  lcd.print(" *** ALARM *** ");
+  lcd.print("ENTER");
   lcd.setCursor(0,1);
   lcd.print("Pass>");
       while(activated) {
@@ -214,6 +207,8 @@ delay(500);
           lcd.setCursor(k,1);
           lcd.print(keypressed);
           k++;
+          Serial.println(keypressed);
+          
         }
       }
       if (k > 9 || keypressed == '#') {
@@ -230,19 +225,54 @@ delay(500);
           activated = false;
           alarmActivated = false;
           noTone(buzzer);
+          digitalWrite(13,LOW);
           screenOffMsg = 0; 
         }
         else if (tempPassword != password) {
+          
+          m++;
           lcd.setCursor(0,1);
-          lcd.print("LOL!");
-          delay(1000);
+          lcd.print(" WRONG PASSWORD");
+          delay(2000);
           lcd.clear();
           lcd.setCursor(0,0);
-          lcd.print(" *** ALARM *** ");
+          lcd.print("ENTER");
           lcd.setCursor(0,1);
           lcd.print("Pass>");
-        }
-      }    
-    }
-}
+          if(m>1)
+          {
+         // 
 
+            //tone(buzzer, 1000);
+            for(int n=1;n<=3;n++)
+        {
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("     ALERT  ");
+        delay(500);
+        lcd.clear();
+        delay(500);
+        }
+    Serial.print("ATD +917014922669;\r");//Phone number you want to call
+             int countdown = 5; // 5 seconds count down before activating the alarm
+             while (countdown != 0) {
+             lcd.clear();
+             lcd.setCursor(0,0);
+             lcd.print("ACCESS DENIED");
+             lcd.setCursor(0,1);
+             lcd.print("Wait For ");
+             lcd.setCursor(9,1);
+             lcd.print(countdown);
+             lcd.setCursor(10,1);
+             lcd.print("Sec");
+             countdown--;
+             delay(1000);
+           }
+           
+      enterPassword();
+
+         }
+       }
+     }    
+   }
+ }

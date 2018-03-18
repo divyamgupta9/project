@@ -4,8 +4,8 @@ SoftwareSerial mySerial(2,3);
 
 void setup()
 {
-  mySerial.begin(9600);               // the GPRS baud rate   
-  Serial.begin(9600);                 // the GPRS baud rate   
+  mySerial.begin(115200);               // the GPRS baud rate   
+  Serial.begin(115200);                 // the GPRS baud rate   
 }
 
 void loop()
